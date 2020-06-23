@@ -1,3 +1,20 @@
+/* Matrix algebra convenience functions
+ * Copyright (C) 2020 JBrandon Duck-Mayr
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MATOPS_H
 #define MATOPS_H
 
@@ -22,24 +39,6 @@ inline double vT_Mi_v(const arma::mat & M, const arma::vec& v) {
 // inline double vT_Mi_v(const arma::mat & M, const arma::vec& v) {
 //     return arma::as_scalar(v.t() * arma::inv_sympd(M) * v);
 // }
-
-/* The notation here follows Eq. A.5 & A.6 & Alg. 2.1 in R&W (2006).
- * If x and y are jointly normal,
- * A is the covariance of x, B is the covariance of y,
- * and C is the covariance between x and y.
- * mx is the mean of x, my is the mean of y, and ymmy is y minus my.
- * L is the lower Cholesky of A + B.
- */
-arma::vec cond_mean(const arma::vec& ymmy, const arma::vec& mx,
-                    const arma::mat& C, const arma::mat& L) {
-    return mx + C * arma::solve(arma::trimatu(L.t()),
-                                arma::solve(arma::trimatl(L), ymmy));
-}
-
-arma::mat cond_var(const arma::mat& A, const arma::mat& C, const arma::mat& L) {
-    arma::mat M = arma::solve(arma::trimatl(L), C);
-    return A - M.t() * M;
-}
 
 #endif
 

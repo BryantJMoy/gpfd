@@ -1,3 +1,20 @@
+/* Multivariate normal density and random number generating functions
+ * Copyright (C) 2020 JBrandon Duck-Mayr
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MVNORM_H
 #define MVNORM_H
 
@@ -5,7 +22,9 @@
 #include "matops.h" // For regularization
 
 // log only, one observation only
-double dmvnorm(const arma::vec& x, const arma::vec& mu, const arma::mat& S) {
+inline double dmvnorm(const arma::vec& x,   // observations
+                      const arma::vec& mu,  // mean
+                      const arma::mat& S) { // variance
     arma::uword  p = S.n_cols;
     arma::vec    z = x - mu;
     arma::mat    U = arma::chol(S);
@@ -16,7 +35,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mu, const arma::mat& S) {
 }
 
 // one observation only
-arma::vec rmvnorm(const arma::vec& mu, const arma::mat& S) {
+inline arma::vec rmvnorm(const arma::vec& mu, const arma::mat& S) {
     arma::uword m = S.n_cols, i;
     arma::vec res(m);
     for ( i = 0; i < m; ++i ) {
@@ -25,26 +44,14 @@ arma::vec rmvnorm(const arma::vec& mu, const arma::mat& S) {
     return arma::chol(S, "lower") * res + mu;
 }
 
-arma::vec rmvnorm2(const arma::vec& mu, const arma::mat& S) {
-    arma::uword m = S.n_cols, i;
-    arma::vec res(m);
-    for ( i = 0; i < m; ++i ) {
-        res[i] = R::rnorm(0.0, 1.0);
-    }
-    bool able_to_decompose;
-    arma::mat L;
-    able_to_decompose = arma::chol(L, S, "lower");
-    if ( !able_to_decompose ) {
-        arma::chol(L, S + 0.001 * arma::eye(m, m), "lower");
-    }
-    return L * res + mu;
-}
-
-// Where [x; y] ~ N([mx; my], [Vx, Vyx; Vxy, Vy]), draw an observation from x|y
-arma::vec condrmvnorm(const arma::vec& mx, const arma::vec& my,   // means
-                      const arma::mat& Vx, const arma::mat& Vy,   // variances
-                      const arma::mat& Vxy, const arma::mat& Vyx, // covariances
-                      const arma::vec& y) {             // conditioning variable
+// Where [x; y] ~ N([mx; my], [Vx, Vyx; Vxy, Vy]), draw from distribution of x|y
+inline arma::vec condrmvnorm(const arma::vec& mx,  // x mean
+                             const arma::vec& my,  // y mean
+                             const arma::mat& Vx,  // x variance
+                             const arma::mat& Vy,  // y variance
+                             const arma::mat& Vxy, // covariance between x & y
+                             const arma::mat& Vyx, // covariance between y & x
+                             const arma::vec& y) { // conditioning variable
     using arma::chol;
     using arma::solve;
     using arma::trimatl;
